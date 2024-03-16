@@ -5,6 +5,15 @@ import httpStatus from "http-status";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
 
+interface IRegisterStudent {
+  name: string;
+  email: string;
+  mobile: string;
+  className: string;
+  password: string;
+  rollNo: string;
+}
+
 const registerStudent = async ({
   name,
   email,
@@ -12,7 +21,7 @@ const registerStudent = async ({
   className,
   password,
   rollNo,
-}) => {
+}: IRegisterStudent) => {
   const existingStudent = await Student.findOne({
     email: email,
     rollNo: rollNo,
@@ -33,7 +42,24 @@ const registerStudent = async ({
   return student;
 };
 
-const loginStudent = async ({ email, password }) => {
+interface ILoginStudent {
+  email: string;
+  password: string;
+}
+
+interface IStudentData {
+  _id: string;
+  name: string;
+  email: string;
+  mobile: string;
+  className: string;
+  rollNo: string;
+}
+
+const loginStudent = async ({
+  email,
+  password,
+}: ILoginStudent): Promise<IStudentData> => {
   const student = await Student.findOne({
     email,
   });
@@ -44,20 +70,27 @@ const loginStudent = async ({ email, password }) => {
   if (!isMatch) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect password");
   }
-  return {
+  const studentData: IStudentData = {
     name: student.name,
     email: student.email,
     mobile: student.mobile,
     className: student.className,
     rollNo: student.rollNo,
+    _id: student._id.toString(),
   };
+  return studentData;
 };
 
-const generateAuthToken = async (student) => {
+interface IGenerateAuthToken {
+  _id: string;
+  role: string;
+}
+
+const generateAuthToken = async ({ _id, role }: IGenerateAuthToken) => {
   const token = jwt.sign(
     {
-      _id: student._id,
-      role: "student",
+      _id: _id,
+      role: role,
     },
     config.jwt.secret,
     {

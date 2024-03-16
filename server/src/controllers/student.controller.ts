@@ -22,7 +22,10 @@ const register = catchAsync(async (req, res) => {
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const student = await authService.loginStudent({ email, password });
-  const token = await authService.generateAuthToken(student);
+  const token = await authService.generateAuthToken({
+    _id: student._id,
+    role: "student",
+  });
   res.status(httpStatus.OK).json({
     status: "success",
     data: student,
