@@ -1,20 +1,14 @@
 import { Schema, model } from "mongoose";
 
-interface IStudent {
+interface IMentor {
   name: string;
   email: string;
   mobile: string;
-  className: string;
   password: string;
-  rollNo: string;
 }
 
-const studentSchema = new Schema<IStudent>({
+const mentorSchema = new Schema<IMentor>({
   name: {
-    type: String,
-    required: true,
-  },
-  email: {
     type: String,
     required: true,
   },
@@ -22,7 +16,7 @@ const studentSchema = new Schema<IStudent>({
     type: String,
     required: true,
   },
-  className: {
+  email: {
     type: String,
     required: true,
   },
@@ -30,12 +24,7 @@ const studentSchema = new Schema<IStudent>({
     type: String,
     required: true,
   },
-  rollNo: {
-    type: String,
-    required: true,
-  },
 });
 
-const Student = model<IStudent>("Student", studentSchema);
-
-export default Student;
+const Mentor = model<IMentor>("Mentor", mentorSchema);
+export default Mentor;
