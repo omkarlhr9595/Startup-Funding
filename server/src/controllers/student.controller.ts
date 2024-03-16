@@ -1,20 +1,10 @@
 import httpStatus from "http-status";
-import { Student } from "../models";
+import authService from "../services/auth.service";
 import catchAsync from "../utils/catchAsync";
 
 const register = catchAsync(async (req, res) => {
   const { name, email, mobile, className, password, rollNo } = req.body;
-  const existingStudent = await Student.findOne({
-    email: email,
-    rollNo: rollNo,
-    mobile: mobile,
-  });
-  if (existingStudent) {
-    return res.status(httpStatus.BAD_REQUEST).json({
-      message: "Student already exists",
-    });
-  }
-  const student = new Student({
+  await authService.registerStudent({
     name,
     email,
     mobile,
@@ -22,11 +12,25 @@ const register = catchAsync(async (req, res) => {
     password,
     rollNo,
   });
-  await student.save();
+
   res.status(httpStatus.CREATED).json({
+    status: "success",
     message: "Student registered successfully",
   });
 });
+
+const login = catchAsync(async (req, res) => {
+  const { email, password } = req.body;
+  const student = await authService.loginStudent({ email, password });
+  const token = await authService.generateAuthToken(student);
+  res.status(httpStatus.OK).json({
+    status: "success",
+    data: student,
+    token,
+  });
+});
+
 export default {
   register,
+  login,
 };

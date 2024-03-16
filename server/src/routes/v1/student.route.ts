@@ -11,4 +11,10 @@ router.post(
   studentController.register
 );
 
+router.post(
+  "/login",
+  validate(studentValidator.loginStudent),
+  studentController.login
+);
+
 export default router;
