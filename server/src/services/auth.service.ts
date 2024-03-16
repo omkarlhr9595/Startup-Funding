@@ -4,6 +4,7 @@ import ApiError from "../utils/ApiError";
 import httpStatus from "http-status";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
+import Investor from "../models/investor/investor.model";
 
 interface IRegisterStudent {
   name: string;
@@ -100,8 +101,84 @@ const generateAuthToken = async ({ _id, role }: IGenerateAuthToken) => {
   return token;
 };
 
+interface IRegisterInvestor {
+  name: string;
+  email: string;
+  mobile: string;
+  password: string;
+  address: string;
+  experience: string;
+  linkedin?: string;
+}
+
+const registerInvestor = async ({
+  name,
+  email,
+  mobile,
+  password,
+  address,
+  experience,
+  linkedin,
+}: IRegisterInvestor) => {
+  const existingInvestor = await Investor.findOne({
+    email: email,
+    mobile: mobile,
+  });
+  if (existingInvestor) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Investor already exists");
+  }
+  const investor = new Investor({
+    name,
+    email,
+    mobile,
+    password: await encryptPassword(password),
+    address,
+    experience,
+    linkedin,
+  });
+  await investor.save();
+  return investor;
+};
+
+interface IInvestorData {
+  _id: string;
+  name: string;
+  email: string;
+  mobile: string;
+  address: string;
+  experience: string;
+  linkedin?: string;
+}
+
+const loginInvestor = async (
+  email: string,
+  password: string
+): Promise<IInvestorData> => {
+  const investor = await Investor.findOne({
+    email,
+  });
+  if (!investor) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Investor not found");
+  }
+  const isMatch = await isPasswordMatch(password, investor.password);
+  if (!isMatch) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect password");
+  }
+  const investorData: IInvestorData = {
+    name: investor.name,
+    email: investor.email,
+    mobile: investor.mobile,
+    address: investor.address,
+    experience: investor.experience,
+    _id: investor._id.toString(),
+  };
+  return investorData;
+};
+
 export default {
   registerStudent,
   loginStudent,
   generateAuthToken,
+  registerInvestor,
+  loginInvestor,
 };
